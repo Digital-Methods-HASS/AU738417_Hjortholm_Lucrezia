@@ -1,0 +1,50 @@
+---
+title: "Final Project"
+author: "Lucrezia Hjortholm and Zaid Khalaf"
+date: "2025-05-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+Aarhus_1860_csv <- read_csv("Digitale/Aarhus-1860-csv.csv")
+
+head(Aarhus_1860_csv)
+glimpse(Aarhus_1860_csv)
+```
+
+
+```{r}
+Aarhus_1860_csv %>% 
+  group_by(koen) %>% 
+  summarize( total = n(),
+             percent = total / nrow(.) *100 )
+```
+
+
+```{r setup, include=FALSE}
+library(tidyverse)
+
+Kvinder <- read_csv("Digitale/Kvinder_data2024.csv")
+glimpse(Kvinder)
+```
+
+
+```{r}
+Kvinder %>% 
+  group_by(`Age;2024`) %>% 
+  summarize( total = n(),
+             percent = total / nrow(.) *100 )
+```
+
+
+```{r pressure, echo=FALSE}
+#Here we have presented our data in barplots
+
+ggplot(data = Aarhus_1860_csv,aes(x= koen, y= civilstand)+
+  geom_point()+ 
+  geom_smooth()+
+  theme_bw()
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
