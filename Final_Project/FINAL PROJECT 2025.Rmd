@@ -1,0 +1,138 @@
+---
+title: "Final Project"
+author: "Lucrezia Hjortholm and Zaid Khalaf"
+date: "2025-23-05"
+output: html_document
+---
+
+```{r load data}
+library(tidyverse)
+Aarhus_1860_csv <- read_csv("Digitale/Aarhus-1860-csv.csv")
+
+head(Aarhus_1860_csv)
+glimpse(Aarhus_1860_csv)
+```
+
+
+```{r}
+Aarhus_1860_csv %>% 
+  group_by(koen) %>% 
+  summarize( total = n(),
+             percent = total / nrow(.) *100 )
+```
+
+```{r}
+Aarhus_1860_csv %>% 
+  group_by(civilstand) %>% 
+    summarize( total = n())
+
+```
+
+
+```{r setup, include=TRUE}
+library(tidyverse)
+
+Kvinder <- read_csv2("Digitale/Kvinder_data2024_.csv")
+Kvinder
+glimpse(Kvinder)
+```
+
+
+```{r}
+Kvinder %>% 
+  summarize( age = Age,
+             total = sum(`Number of married women`),
+             percent = round(`Number of married women`/total *100, 1) ) %>% 
+  select(-total)
+```
+
+```{r}
+Kvinder %>% 
+  summarize(age = Age,
+  total = sum(`Number of unmarried women`),
+  percent = round(`Number of unmarried women`/total *100,1)) %>% 
+  select(-total)
+```
+```{r}
+Kvinder %>%
+  filter(Age >= 30 & Age <= 40) %>%
+  summarise(total_married = sum(`Number of married women`),
+            total_women = sum(`Number of married women` + `Number of unmarried women`),
+            percent_married = round(total_married/total_women*100, 1))
+```
+
+
+```{r}
+Aarhus_1860_csv %>% 
+  filter(koen == "kvinde" & civilstand == "gift") %>%
+  filter(alder < 41 & alder > 29) %>%  #2713 married, and 658 unmarried
+  group_by(alder) %>% 
+  summarize(total = n()) %>%
+  mutate(percent = round(total / 3371 * 100, 1))
+
+```
+
+
+```{r}
+age_summary <- Aarhus_1860_csv %>%
+  filter(koen == "kvinde", alder >= 30, alder <= 40) %>%
+  group_by(alder, civilstand) %>%
+  summarise(total = n(), .groups = "drop") %>%
+  group_by(alder) %>%
+  mutate(percent = round(total / sum(total) * 100, 1)) %>%
+  ungroup()
+```
+
+
+```{r pressure, echo=TRUE}
+
+ggplot(age_summary, aes(x = factor(alder), y = percent, fill = civilstand)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Procentdel af kvinder (30–40 år) i 1860 fordelt på civilstand",
+    x = "Alder",
+    y = "Procent",
+    fill = "Civilstand"
+  ) +
+  scale_fill_manual(values = c("gift" = "purple", "ugift" = "turquoise")) +
+  theme_minimal()
+
+
+
+```
+
+
+```{r}
+age_summary_2024 <- Kvinder %>%
+  filter(Age >= 30, Age <= 40) %>%                         # Filter age 30-40
+  select(Age, `Number of married women`, `Number of unmarried women`) %>%  
+  pivot_longer(
+    cols = c(`Number of married women`, `Number of unmarried women`),  # Pivot to long format
+    names_to = "civilstand",
+    values_to = "count"
+  ) %>%
+  mutate(
+    civilstand = case_when(
+      civilstand == "Number of married women" ~ "gift",
+      civilstand == "Number of unmarried women" ~ "ugift"
+    )
+  ) %>%
+  group_by(Age) %>%
+  mutate(percent = count / sum(count) * 100) %>%  # Calculate % within each age
+  ungroup()
+```
+
+
+
+```{r}
+ggplot(age_summary_2024, aes(x = factor(Age), y = percent, fill = civilstand)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Procentdel af kvinder (30–40 år) i 2024 fordelt på civilstand",
+    x = "Alder",
+    y = "Procent",
+    fill = "Civilstand"
+  ) +
+  scale_fill_manual(values = c("gift" = "purple", "ugift" = "turquoise")) +
+  theme_minimal()
+```
